@@ -93,9 +93,9 @@ export default function About() {
         <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-slate-200 mb-24 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-accent/5 rounded-full filter blur-[100px] pointer-events-none"></div>
           <ScrollReveal animation="fade-up" className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-serif font-bold text-slate-900 mb-6">A First in the United Kingdom</h2>
+            <h2 className="text-3xl font-serif font-bold text-slate-900 mb-6">Our Parish in Cardiff</h2>
             <p className="text-slate-750 text-base sm:text-lg leading-relaxed font-sans font-light">
-              We are honored to be the first pilgrimage church established in honor of the Holy Innocents in the United Kingdom for the Malankara Orthodox Syrian Church (Indian Orthodox Church) in South Wales.
+              St. Gregorios Indian Orthodox Church Cardiff is a newly forming parish under the Diocese of UK, Europe, and Africa of the Malankara Orthodox Syrian Church in Cardiff, Wales.
             </p>
             <p className="text-slate-750 text-base sm:text-lg leading-relaxed font-sans font-light mt-4">
               We are a Parish in the Diocese of United Kingdom, Europe, and Africa under the pastoral authority of Metropolitan Abraham Mar Stéphanos. Let us give thanks to God!

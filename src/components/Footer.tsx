@@ -38,19 +38,19 @@ export default function Footer() {
             <Link to="/" className="flex items-center gap-3 group">
               <img 
                 src="/logo.jpg" 
-                alt="HIIOPC Logo" 
+                alt="St Gregorios Logo" 
                 className="h-10 w-10 rounded-full border border-accent/60 object-cover group-hover:border-accent transition-colors duration-300" 
               />
               <span className="font-serif text-lg font-bold text-slate-100 tracking-wide group-hover:text-accent transition-colors duration-300">
-                Holy Innocents Church
+                St Gregorios Church
               </span>
             </Link>
             <p className="text-sm leading-relaxed text-slate-400">
-              A first pilgrimage church in honor of the Holy Innocents in the United Kingdom for the Malankara Orthodox Syrian Church.
+              A parish under the Diocese of UK, Europe, and Africa of the Malankara Orthodox Syrian Church.
             </p>
             <div className="flex items-center gap-4 mt-2">
               <a 
-                href="https://www.facebook.com/p/Holy-Innocents-Indian-Orthodox-Church-Wales-61560140757775/" 
+                href="https://www.facebook.com/profile.php?id=61589453520781" 
                 target="_blank" 
                 rel="noreferrer"
                 className="p-2.5 rounded-full bg-primary-light/40 text-slate-400 hover:text-accent hover:bg-primary-light hover:shadow-[0_0_15px_rgba(214,175,55,0.2)] transition-all duration-300"
@@ -112,8 +112,8 @@ export default function Footer() {
 
         {/* Legal Credits */}
         <div className="mt-12 pt-8 border-t border-white/5 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© {currentYear} Holy Innocents Indian Orthodox Pilgrimage Church. All rights reserved.</p>
-          <p className="text-slate-450">Built with React & Cloudflare Pages</p>
+          <p>© {currentYear} St Gregorios Indian Orthodox Church Cardiff Wales. All rights reserved.</p>
+          <p className="text-slate-450">Built with React & Firebase Hosting</p>
         </div>
       </div>
 

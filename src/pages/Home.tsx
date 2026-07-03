@@ -32,8 +32,8 @@ export default function Home() {
   const defaultVideos: VideoItem[] = [
     {
       id: 'default-vid-1',
-      title: 'HIIOPC, MMVS Song',
-      description: 'Lyrics & Music: Kochumon Karichal | Vocal: HIIOC Choir Wales | Production: MMVS Wales | Videography & Editing: Jibin John & Leo | Singers: Kochumon Karichal, Roshan Vadakel, Jino Francis, Beena Jacob, Jissa Joyson, Bency Lancy Samuel, Jeena Jessy Kunjumon, Anna Selin Jolly',
+      title: 'St Gregorios Choir Song',
+      description: 'Lyrics & Music: Kochumon Karichal | Vocal: St Gregorios Choir Cardiff | Production: MMVS Wales | Videography & Editing: Jibin John & Leo | Singers: Kochumon Karichal, Roshan Vadakel, Jino Francis, Beena Jacob, Jissa Joyson, Bency Lancy Samuel, Jeena Jessy Kunjumon, Anna Selin Jolly',
       youtubeUrl: '' // Empty signifies fallback description box
     }
   ];
@@ -99,7 +99,7 @@ export default function Home() {
               <div className="absolute -inset-1.5 rounded-full bg-accent/30 blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
               <img 
                 src="/logo.jpg" 
-                alt="HIIOPC Logo" 
+                alt="St Gregorios Logo" 
                 className="relative h-28 w-28 md:h-36 md:w-36 rounded-full border-2 border-accent object-cover shadow-2xl" 
               />
             </div>
@@ -113,13 +113,13 @@ export default function Home() {
           
           <ScrollReveal animation="fade-up" delay={400} duration={1000}>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold font-serif mb-6 tracking-wide leading-tight text-white">
-              Holy Innocents <span className="shimmer-text">Indian Orthodox</span> Pilgrimage Church
+              St Gregorios <span className="shimmer-text">Indian Orthodox</span> Church
             </h1>
           </ScrollReveal>
           
           <ScrollReveal animation="fade-up" delay={600} duration={800}>
             <p className="text-base sm:text-lg md:text-2xl text-slate-200 font-light max-w-2xl font-sans tracking-widest mb-10 uppercase">
-              Briton Ferry, Neath, Wales, UK
+              Cardiff, Wales, UK
             </p>
           </ScrollReveal>
           
@@ -162,7 +162,7 @@ export default function Home() {
               </h2>
               <div className="h-1 w-20 bg-gradient-to-r from-accent to-accent-light rounded"></div>
               <p className="text-slate-650 text-base sm:text-lg leading-relaxed font-sans font-light">
-                A first pilgrimage church in honor of the Holy Innocents in the United Kingdom for the Malankara Orthodox Syrian Church (Indian Orthodox Church) in South Wales.
+                St. Gregorios Indian Orthodox Church Cardiff is a newly forming parish under the Diocese of UK, Europe, and Africa of the Malankara Orthodox Syrian Church in Cardiff, Wales.
               </p>
               <p className="text-slate-700 text-base sm:text-lg leading-relaxed font-sans font-light">
                 We are a Parish in the Diocese of United Kingdom – Europe and Africa under the pastoral authority of Metropolitan Abraham Mar Stéphanos. Let us give thanks to God!

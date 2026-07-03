@@ -60,15 +60,15 @@ export default function Navbar() {
               <Link to="/" className="flex items-center gap-2.5">
                 <img 
                   src="/logo.jpg" 
-                  alt="HIIOPC Logo" 
+                  alt="St Gregorios Logo" 
                   className="h-10 w-10 rounded-full border border-accent/60 object-cover" 
                 />
                 <div className="text-right">
                   <span className="block font-serif text-sm font-bold text-slate-100 leading-tight">
-                    Holy Innocents
+                    St Gregorios
                   </span>
                   <span className="block text-[8px] text-accent/80 font-sans tracking-widest uppercase">
-                    HIIOPC Wales
+                    Cardiff Wales
                   </span>
                 </div>
               </Link>
@@ -80,15 +80,15 @@ export default function Navbar() {
               <Link to="/" className="flex items-center gap-3 group">
                 <img 
                   src="/logo.jpg" 
-                  alt="HIIOPC Logo" 
+                  alt="St Gregorios Logo" 
                   className="h-12 w-12 rounded-full border-2 border-accent/70 object-cover shadow-[0_0_15px_rgba(214,175,55,0.2)] group-hover:scale-105 group-hover:border-accent transition-all duration-300" 
                 />
                 <div>
                   <span className="block font-serif text-base md:text-lg font-bold text-slate-100 tracking-wide leading-tight group-hover:text-accent transition-colors duration-300">
-                    Holy Innocents Church
+                    St Gregorios Church
                   </span>
                   <span className="block text-[10px] text-accent/80 font-sans tracking-widest uppercase mt-0.5">
-                    HIIOPC Wales
+                    Cardiff Wales
                   </span>
                 </div>
               </Link>
@@ -148,10 +148,10 @@ export default function Navbar() {
             <Link to="/" className="flex items-center gap-2">
               <img 
                 src="/logo.jpg" 
-                alt="Logo" 
+                alt="St Gregorios Logo" 
                 className="h-9 w-9 rounded-full border border-accent/60 object-cover" 
               />
-              <span className="font-serif text-sm font-bold text-slate-100">Holy Innocents</span>
+              <span className="font-serif text-sm font-bold text-slate-100">St Gregorios</span>
             </Link>
             <button
               onClick={() => setIsOpen(false)}

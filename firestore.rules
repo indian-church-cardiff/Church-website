@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated admin
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // Committee collection rules
+    match /committee/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Programs collection rules
+    match /programs/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Gallery collection rules
+    match /gallery/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Articles collection rules
+    match /articles/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Videos collection rules
+    match /videos/{document} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Inquiries collection rules (Contact Us messages)
+    match /inquiries/{document} {
+      allow read: if isAdmin(); // Only admins can view contact messages
+      allow create: if true;    // Anyone can send an inquiry
+      allow update, delete: if isAdmin();
+    }
+  }
+}

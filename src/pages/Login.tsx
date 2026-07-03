@@ -52,7 +52,7 @@ export default function Login() {
             <div className="absolute -inset-1.5 rounded-full bg-accent/20 blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
             <img 
               src="/logo.jpg" 
-              alt="HIIOPC Logo" 
+              alt="St Gregorios Logo" 
               className="relative h-20 w-20 rounded-full border-2 border-accent object-cover mx-auto shadow-2xl" 
             />
           </div>
@@ -80,7 +80,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@hiiopc.co.uk"
+                  placeholder="admin@stgregorioscardiff.org"
                   className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-250 rounded-xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all duration-300 text-slate-800 text-sm"
                 />
               </div>

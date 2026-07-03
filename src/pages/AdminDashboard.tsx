@@ -500,7 +500,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-950 border border-slate-800 rounded-3xl p-6 mb-10 shadow-xl">
           <div>
             <h1 className="text-3xl font-bold font-serif text-white tracking-wide">Parish Control Center</h1>
-            <p className="text-sm text-slate-400 mt-1">Manage Holy Innocents Church content dynamically</p>
+            <p className="text-sm text-slate-400 mt-1">Manage St Gregorios Church content dynamically</p>
           </div>
           <button
             onClick={handleLogout}
@@ -1005,7 +1005,7 @@ export default function AdminDashboard() {
                       required
                       value={vidTitle}
                       onChange={(e) => setVidTitle(e.target.value)}
-                      placeholder="e.g. HIIOPC Choir MMVS Song"
+                      placeholder="e.g. St Gregorios Choir Song"
                       className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl focus:outline-none focus:border-accent text-sm"
                     />
                   </div>
