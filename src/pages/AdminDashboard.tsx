@@ -403,6 +403,46 @@ export default function AdminDashboard() {
     }
   };
 
+  const [seeding, setSeeding] = useState(false);
+
+  // Seed Default Committee Members
+  const handleSeedDefaultMembers = async () => {
+    setSeeding(true);
+    setFeedback(null);
+    const defaultMembers = [
+      { name: 'Fr. Ranju Skaria', role: 'Vicar', displayOrder: 1 },
+      { name: 'Mr. Jiby Varghese', role: 'Trustee', displayOrder: 2 },
+      { name: 'Mr. Josemon', role: 'Secretary', displayOrder: 3 },
+      { name: 'Alex Mamman', role: 'MC Member', displayOrder: 4 },
+      { name: 'Jimson George', role: 'MC Member', displayOrder: 5 },
+      { name: 'Manoj Kurien', role: 'MC Member', displayOrder: 6 },
+      { name: 'Santhosh Matthew', role: 'MC Member', displayOrder: 7 },
+      { name: 'Mammen Kadavil', role: 'MC Member', displayOrder: 8 },
+      { name: 'Saiju Joy', role: 'MC Member', displayOrder: 9 },
+      { name: 'Cherian Thomas', role: 'MC Member', displayOrder: 10 },
+      { name: 'Ajesh Karikuzhiyil', role: 'Auditor', displayOrder: 11 },
+      { name: 'Jiju M Kunjachan', role: 'Auditor', displayOrder: 12 },
+    ];
+
+    try {
+      for (const member of defaultMembers) {
+        await addDoc(collection(db, 'committee'), {
+          name: member.name,
+          role: member.role,
+          imageUrl: null,
+          displayOrder: member.displayOrder,
+          createdAt: serverTimestamp(),
+        });
+      }
+      setFeedback({ type: 'success', message: 'Seeded default committee members successfully!' });
+    } catch (err: any) {
+      console.error(err);
+      setFeedback({ type: 'error', message: 'Failed to seed default committee members.' });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   // Add Article
   const handleAddArticle = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -868,8 +908,16 @@ export default function AdminDashboard() {
               <div className="lg:col-span-2">
                 <h2 className="text-xl font-serif font-bold text-white mb-6">Current Parish Committee</h2>
                 {committee.length === 0 ? (
-                  <div className="bg-slate-955 bg-slate-950/20 border border-dashed border-slate-800 p-8 rounded-3xl text-center text-slate-550 font-light">
-                    Currently displaying default hardcoded members. Add a member above to configure a custom list.
+                  <div className="bg-slate-955 bg-slate-950/20 border border-dashed border-slate-800 p-8 rounded-3xl text-center text-slate-400 font-light flex flex-col items-center gap-4">
+                    <p>No committee members found in the database.</p>
+                    <button
+                      type="button"
+                      onClick={handleSeedDefaultMembers}
+                      disabled={seeding}
+                      className="bg-accent hover:bg-accent-light text-slate-950 font-bold px-5 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {seeding ? 'Seeding...' : 'Seed Default Members'}
+                    </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1011,13 +1059,13 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">YouTube URL or Embed ID *</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">YouTube or Facebook Video URL *</label>
                     <input
                       type="text"
                       required
                       value={vidUrl}
                       onChange={(e) => setVidUrl(e.target.value)}
-                      placeholder="e.g. https://www.youtube.com/watch?v=xxxxxx"
+                      placeholder="e.g. https://youtube.com/watch?v=... or https://facebook.com/.../videos/..."
                       className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl focus:outline-none focus:border-accent text-sm"
                     />
                   </div>

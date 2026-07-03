@@ -67,6 +67,18 @@ export default function Gallery() {
     return () => unsubscribe();
   }, []);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [selectedImage]);
+
   // Merge Firestore uploaded photos first, followed by default photos
   const allImages = [...dbImages, ...defaultImages];
 
@@ -82,15 +94,15 @@ export default function Gallery() {
   ];
 
   return (
-    <div className="min-h-screen mesh-bg pt-32 pb-24 text-slate-200">
+    <div className="min-h-screen mesh-bg pt-32 pb-24 text-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <ScrollReveal animation="fade-up" className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-accent font-semibold tracking-widest text-xs uppercase bg-accent/5 px-3 py-1.5 rounded-md border border-accent/20">Parish Media</span>
-          <h1 className="text-4xl sm:text-5xl font-serif text-white mt-4 font-bold leading-tight">Moments of Faith</h1>
+          <h1 className="text-4xl sm:text-5xl font-serif text-slate-900 mt-4 font-bold leading-tight">Moments of Faith</h1>
           <div className="h-1 w-16 bg-gradient-to-r from-accent to-accent-light mx-auto mt-4 mb-6"></div>
-          <p className="text-slate-400 font-light leading-relaxed">
+          <p className="text-slate-655 font-light leading-relaxed">
             A visual documentation of our prayers, spiritual gatherings, feast days, and OCYM activities in Cardiff, Wales.
           </p>
         </ScrollReveal>
@@ -103,8 +115,8 @@ export default function Gallery() {
               onClick={() => setActiveFilter(filter.value as any)}
               className={`px-6 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-300 border ${
                 activeFilter === filter.value
-                  ? 'bg-gradient-to-r from-accent-dark to-accent border-accent text-primary-dark shadow-[0_4px_15px_rgba(214,175,55,0.25)]'
-                  : 'bg-primary-light/20 border-white/5 text-slate-350 hover:border-accent/40'
+                  ? 'bg-gradient-to-r from-accent-dark to-accent border-accent text-slate-955 shadow-[0_4px_15px_rgba(214,175,55,0.25)]'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-accent/40 hover:text-accent'
               }`}
             >
               {filter.label}
@@ -116,7 +128,7 @@ export default function Gallery() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="h-12 w-12 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-slate-400 text-xs mt-4 uppercase tracking-widest">Loading gallery items...</p>
+            <p className="text-slate-600 text-xs mt-4 uppercase tracking-widest">Loading gallery items...</p>
           </div>
         ) : (
           /* Gallery Grid */
@@ -126,10 +138,10 @@ export default function Gallery() {
                 key={image.id}
                 animation="scale-in"
                 delay={index * 100}
-                className="group cursor-pointer flex flex-col h-full rounded-2xl overflow-hidden border border-white/5 bg-primary-light/10 backdrop-blur-sm hover:border-accent/20 transition-all duration-500 shadow-xl"
+                className="group cursor-pointer flex flex-col h-full rounded-2xl overflow-hidden border border-slate-100 bg-white hover:border-accent/40 hover:shadow-2xl transition-all duration-500 shadow-lg"
               >
                 <div 
-                  className="relative overflow-hidden aspect-[4/3] bg-primary-dark"
+                  className="relative overflow-hidden aspect-[4/3] bg-slate-100"
                   onClick={() => setSelectedImage(image)}
                 >
                   <img 
@@ -149,10 +161,10 @@ export default function Gallery() {
                     <span className="text-[9px] font-bold text-accent uppercase tracking-widest bg-accent/10 border border-accent/30 px-2.5 py-1 rounded">
                       {image.category}
                     </span>
-                    <h3 className="text-lg font-serif font-bold text-white mt-4 mb-2 group-hover:text-accent transition-colors duration-300">{image.title}</h3>
+                    <h3 className="text-lg font-serif font-bold text-slate-900 mt-4 mb-2 group-hover:text-accent transition-colors duration-300 line-clamp-1">{image.title}</h3>
                   </div>
                   {image.description && (
-                    <p className="text-sm text-slate-400 leading-relaxed font-sans font-light mt-2">{image.description}</p>
+                    <p className="text-sm text-slate-600 leading-relaxed font-sans font-light mt-2 line-clamp-3">{image.description}</p>
                   )}
                 </div>
               </ScrollReveal>
@@ -163,10 +175,10 @@ export default function Gallery() {
         {/* Empty State */}
         {!loading && filteredImages.length === 0 && (
           <ScrollReveal animation="scale-in">
-            <div className="text-center py-20 bg-primary-light/10 rounded-2xl border border-dashed border-accent/20 max-w-lg mx-auto glass">
+            <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-accent/30 max-w-lg mx-auto shadow-md">
               <Camera className="h-12 w-12 text-accent/60 mx-auto mb-4" />
-              <h3 className="text-lg font-serif text-white font-semibold">No Photos Found</h3>
-              <p className="text-sm text-slate-450 max-w-xs mx-auto mt-2 font-light">
+              <h3 className="text-lg font-serif text-slate-900 font-semibold">No Photos Found</h3>
+              <p className="text-sm text-slate-600 max-w-xs mx-auto mt-2 font-light">
                 There are currently no photos in the "{activeFilter}" category. Please check back later.
               </p>
             </div>
@@ -176,17 +188,17 @@ export default function Gallery() {
         {/* Lightbox Modal */}
         {selectedImage && (
           <div 
-            className="fixed inset-0 z-50 bg-[#03050a]/95 backdrop-blur-xl flex items-center justify-center p-4 transition-all duration-300"
+            className="fixed inset-0 z-50 bg-[#03050a]/95 backdrop-blur-xl overflow-y-auto flex justify-center items-start py-8 sm:py-16 px-4 transition-all duration-300"
             onClick={() => setSelectedImage(null)}
           >
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-6 right-6 text-white/70 hover:text-accent p-2 hover:bg-white/5 rounded-full transition-colors"
+              className="fixed top-6 right-6 text-white/70 hover:text-accent p-2 hover:bg-white/5 rounded-full transition-colors z-50"
             >
               <X className="h-8 w-8" />
             </button>
             <div 
-              className="max-w-4xl w-full flex flex-col gap-6 animate-scale-in"
+              className="max-w-3xl w-full flex flex-col gap-6 animate-scale-in my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-white/10 bg-primary-dark">
@@ -196,13 +208,13 @@ export default function Gallery() {
                   className="w-full h-full object-cover" 
                 />
               </div>
-              <div className="px-2">
+              <div className="px-2 text-left">
                 <span className="text-[10px] font-bold text-accent uppercase tracking-widest bg-accent/10 border border-accent/30 px-3 py-1 rounded">
                   {selectedImage.category}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white mt-4">{selectedImage.title}</h3>
                 {selectedImage.description && (
-                  <p className="text-sm sm:text-base text-slate-400 mt-2 font-sans font-light leading-relaxed">{selectedImage.description}</p>
+                  <p className="text-sm sm:text-base text-slate-300 mt-3 font-sans font-light leading-relaxed whitespace-pre-line">{selectedImage.description}</p>
                 )}
               </div>
             </div>

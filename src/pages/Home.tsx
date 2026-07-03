@@ -59,8 +59,7 @@ export default function Home() {
 
     const qVid = query(
       collection(db, 'videos'),
-      orderBy('createdAt', 'desc'),
-      limit(2)
+      orderBy('createdAt', 'desc')
     );
     const unsubscribeVid = onSnapshot(qVid, (snapshot) => {
       const vids = snapshot.docs.map(doc => ({
@@ -77,6 +76,35 @@ export default function Home() {
       unsubscribeVid();
     };
   }, []);
+
+  const getEmbedUrl = (url: string) => {
+    if (!url) return '';
+    try {
+      const trimmedUrl = url.trim();
+      
+      // Facebook Video Embeds
+      if (trimmedUrl.includes('facebook.com') || trimmedUrl.includes('fb.watch')) {
+        return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(trimmedUrl)}&show_text=0`;
+      }
+      
+      // YouTube Video Embeds
+      if (trimmedUrl.includes('youtu.be/')) {
+        const id = trimmedUrl.split('youtu.be/')[1]?.split(/[?#]/)[0];
+        return `https://www.youtube.com/embed/${id}`;
+      }
+      if (trimmedUrl.includes('watch?v=')) {
+        const id = trimmedUrl.split('watch?v=')[1]?.split('&')[0];
+        return `https://www.youtube.com/embed/${id}`;
+      }
+      if (trimmedUrl.includes('embed/')) {
+        return trimmedUrl;
+      }
+      return trimmedUrl;
+    } catch (e) {
+      console.error(e);
+      return url;
+    }
+  };
 
   const displayVideos = videos.length > 0 ? videos : defaultVideos;
 
@@ -296,34 +324,36 @@ export default function Home() {
             <div className="h-1 w-16 bg-gradient-to-r from-accent to-accent-light mx-auto mt-4 mb-6"></div>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="flex gap-8 overflow-x-auto pb-8 snap-x snap-mandatory scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
             {displayVideos.map((video, idx) => (
-              <ScrollReveal key={video.id} animation="fade-up" delay={idx * 150} className="h-full">
-                <GlowCard className="p-8 bg-white border border-slate-100 h-full flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="p-3 bg-accent/5 rounded-xl border border-accent/20 inline-block text-accent">
-                      <Video className="h-6 w-6" />
+              <div key={video.id} className="min-w-[290px] sm:min-w-[480px] w-[85vw] sm:w-[480px] shrink-0 snap-start h-full pb-4">
+                <ScrollReveal animation="fade-up" delay={idx * 100} className="h-full">
+                  <GlowCard className="p-6 sm:p-8 bg-white border border-slate-100 h-full flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <div className="p-3 bg-accent/5 rounded-xl border border-accent/20 inline-block text-accent">
+                        <Video className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-serif font-bold text-slate-900 line-clamp-2">{video.title}</h3>
+                      {video.description && (
+                        <p className="text-xs sm:text-sm text-slate-600 font-sans font-light leading-relaxed whitespace-pre-line line-clamp-3 hover:line-clamp-none transition-all duration-300">
+                          {video.description}
+                        </p>
+                      )}
                     </div>
-                    <h3 className="text-xl font-serif font-bold text-slate-900">{video.title}</h3>
-                    {video.description && (
-                      <p className="text-sm text-slate-600 font-sans font-light leading-relaxed whitespace-pre-line">
-                        {video.description}
-                      </p>
+                    {video.youtubeUrl && (
+                      <div className="mt-6 aspect-video rounded-xl overflow-hidden shadow-md border border-slate-200 bg-slate-100">
+                        <iframe
+                          src={getEmbedUrl(video.youtubeUrl)}
+                          title={video.title}
+                          className="w-full h-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
                     )}
-                  </div>
-                  {video.youtubeUrl && (
-                    <div className="mt-6 aspect-video rounded-xl overflow-hidden shadow-md border border-slate-200">
-                      <iframe
-                        src={video.youtubeUrl.replace('watch?v=', 'embed/')}
-                        title={video.title}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                    </div>
-                  )}
-                </GlowCard>
-              </ScrollReveal>
+                  </GlowCard>
+                </ScrollReveal>
+              </div>
             ))}
           </div>
         </div>
