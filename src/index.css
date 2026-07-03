@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #faf6ee; /* Warm Ivory base */
+  --color-primary-light: #fdfbf7; /* Light cream/ivory for cards */
+  --color-primary-dark: #f3edd9; /* Cream-gold shadow/darker ivory */
+  --color-accent: #d4af37; /* Metallic gold */
+  --color-accent-light: #f6e093;
+  --color-accent-dark: #aa7c11;
+  
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+}
+
+/* Custom Global Styles and Utilities */
+body {
+  @apply font-sans bg-[#faf6ee] text-slate-800 antialiased scroll-smooth overflow-x-hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-serif tracking-wide;
+}
+
+h1:not([class*="text-"]),
+h2:not([class*="text-"]),
+h3:not([class*="text-"]),
+h4:not([class*="text-"]),
+h5:not([class*="text-"]),
+h6:not([class*="text-"]) {
+  @apply text-slate-900;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #faf6ee;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  border-radius: 9999px;
+  border: 2px solid #faf6ee;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(253, 251, 247, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(214, 175, 55, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(170, 124, 17, 0.05);
+}
+
+.glass-dark {
+  background: rgba(25, 20, 10, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(170, 124, 17, 0.05);
+}
+
+/* Glowing Elements */
+.glow-gold {
+  box-shadow: 0 0 25px -5px rgba(214, 175, 55, 0.15);
+}
+.glow-text-gold {
+  text-shadow: 0 0 12px rgba(170, 124, 17, 0.2);
+}
+
+/* Golden Gradient Text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #aa7c11 0%, #d4af37 50%, #aa7c11 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Animated Mesh Background (Soft light gradient) */
+.mesh-bg {
+  position: relative;
+  background-color: #faf6ee;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(214, 175, 55, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(243, 237, 217, 0.5) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(214, 175, 55, 0.08) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(243, 237, 217, 0.5) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #aa7c11 0%,
+    #f6e093 25%,
+    #d4af37 50%,
+    #f6e093 75%,
+    #aa7c11 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 6s linear infinite;
+}
+
+/* Keyframes for animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Custom Utility Classes */
+.text-slate-350 { color: #64748b; }
+.text-slate-450 { color: #475569; }
+.text-slate-655 { color: #334155; }
+.border-slate-850 { border-color: #cbd5e1; }
+.bg-slate-955 { background-color: #faf6ee; }
+
+/* Reduced Motion Settings */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+}
