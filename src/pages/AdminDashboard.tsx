@@ -10,7 +10,8 @@ import {
   query, 
   orderBy, 
   serverTimestamp,
-  onSnapshot
+  onSnapshot,
+  updateDoc
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { 
@@ -25,7 +26,9 @@ import {
   AlertCircle,
   Users,
   BookOpen,
-  Video
+  Video,
+  Pencil,
+  X
 } from 'lucide-react';
 
 interface Inquiry {
@@ -205,32 +208,90 @@ export default function AdminDashboard() {
     }
   };
 
-  // Add Monthly Program
-  const handleAddProgram = async (e: React.FormEvent) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const resetForms = () => {
+    setEditingId(null);
+    
+    // Programs
+    setProgTitle('');
+    setProgDate('');
+    setProgTime('');
+    setProgDesc('');
+    
+    // Gallery
+    setImgFile(null);
+    setImgUrl('');
+    setImgTitle('');
+    setImgCategory('worship');
+    setImgDesc('');
+    setUploadProgress(null);
+    
+    // Committee
+    setMemberName('');
+    setMemberRole('');
+    setMemberFile(null);
+    setMemberUrl('');
+    setMemberOrder('1');
+    setMemberProgress(null);
+    
+    // Articles
+    setArtTitle('');
+    setArtCategory('Prayers');
+    setArtContent('');
+    
+    // Videos
+    setVidTitle('');
+    setVidDesc('');
+    setVidUrl('');
+  };
+
+  // Reset forms and editing mode when changing tabs
+  useEffect(() => {
+    resetForms();
+  }, [activeTab]);
+
+  // Save program (Add or Edit)
+  const handleSaveProgram = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!progTitle || !progDate || !progTime) return;
     setProgSubmitting(true);
     setFeedback(null);
 
     try {
-      await addDoc(collection(db, 'programs'), {
-        title: progTitle,
-        date: progDate,
-        time: progTime,
-        description: progDesc,
-        createdAt: serverTimestamp()
-      });
-      setProgTitle('');
-      setProgDate('');
-      setProgTime('');
-      setProgDesc('');
-      setFeedback({ type: 'success', message: 'Program event added successfully!' });
+      if (editingId) {
+        await updateDoc(doc(db, 'programs', editingId), {
+          title: progTitle,
+          date: progDate,
+          time: progTime,
+          description: progDesc,
+        });
+        setFeedback({ type: 'success', message: 'Program event updated successfully!' });
+      } else {
+        await addDoc(collection(db, 'programs'), {
+          title: progTitle,
+          date: progDate,
+          time: progTime,
+          description: progDesc,
+          createdAt: serverTimestamp()
+        });
+        setFeedback({ type: 'success', message: 'Program event added successfully!' });
+      }
+      resetForms();
     } catch (err: any) {
       console.error(err);
-      setFeedback({ type: 'error', message: 'Failed to add program event.' });
+      setFeedback({ type: 'error', message: editingId ? 'Failed to update program event.' : 'Failed to add program event.' });
     } finally {
       setProgSubmitting(false);
     }
+  };
+
+  const handleEditProgramClick = (prog: Program) => {
+    setEditingId(prog.id);
+    setProgTitle(prog.title);
+    setProgDate(prog.date);
+    setProgTime(prog.time);
+    setProgDesc(prog.description || '');
   };
 
   // Delete program
@@ -238,6 +299,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this monthly program?')) return;
     try {
       await deleteDoc(doc(db, 'programs', id));
+      if (editingId === id) resetForms();
       setFeedback({ type: 'success', message: 'Program deleted successfully.' });
     } catch (err) {
       console.error(err);
@@ -245,27 +307,38 @@ export default function AdminDashboard() {
     }
   };
 
-  // Handle Gallery Upload / URL Direct Save
+  // Handle Gallery Upload / URL Direct Save (Add or Edit)
   const handleUploadImage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imgTitle) return;
     setFeedback(null);
 
-    // If direct URL is entered, bypass Firebase Storage
-    if (imgUrl.trim()) {
-      try {
+    const saveGalleryData = async (urlToSave: string) => {
+      if (editingId) {
+        await updateDoc(doc(db, 'gallery', editingId), {
+          title: imgTitle,
+          category: imgCategory,
+          description: imgDesc,
+          url: urlToSave,
+        });
+        setFeedback({ type: 'success', message: 'Gallery item updated successfully!' });
+      } else {
         await addDoc(collection(db, 'gallery'), {
           title: imgTitle,
           category: imgCategory,
           description: imgDesc,
-          url: imgUrl.trim(),
+          url: urlToSave,
           createdAt: serverTimestamp()
         });
-        setImgFile(null);
-        setImgTitle('');
-        setImgDesc('');
-        setImgUrl('');
-        setFeedback({ type: 'success', message: 'Image published successfully via direct link!' });
+        setFeedback({ type: 'success', message: 'Image published successfully!' });
+      }
+      resetForms();
+    };
+
+    // If direct URL is entered, or we are editing and keeping the current URL without file upload
+    if (imgUrl.trim() || (editingId && !imgFile)) {
+      try {
+        await saveGalleryData(imgUrl.trim());
       } catch (err) {
         console.error(err);
         setFeedback({ type: 'error', message: 'Database save failed.' });
@@ -281,7 +354,6 @@ export default function AdminDashboard() {
     setUploadProgress(0);
 
     try {
-      // Create Storage Reference
       const storageRef = ref(storage, `gallery/${Date.now()}_${imgFile.name}`);
       const uploadTask = uploadBytesResumable(storageRef, imgFile);
 
@@ -298,22 +370,7 @@ export default function AdminDashboard() {
         },
         async () => {
           const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-          
-          // Save metadata in Firestore
-          await addDoc(collection(db, 'gallery'), {
-            title: imgTitle,
-            category: imgCategory,
-            description: imgDesc,
-            url: downloadUrl,
-            createdAt: serverTimestamp()
-          });
-
-          setImgFile(null);
-          setImgTitle('');
-          setImgDesc('');
-          setImgUrl('');
-          setUploadProgress(null);
-          setFeedback({ type: 'success', message: 'Image uploaded & published successfully!' });
+          await saveGalleryData(downloadUrl);
         }
       );
     } catch (err) {
@@ -323,11 +380,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleEditGalleryClick = (item: GalleryItem) => {
+    setEditingId(item.id);
+    setImgTitle(item.title);
+    setImgCategory(item.category as any);
+    setImgDesc((item as any).description || '');
+    setImgUrl(item.url);
+  };
+
   // Delete Gallery Item
   const handleDeleteGallery = async (id: string) => {
     if (!window.confirm('Remove this photo from the gallery?')) return;
     try {
       await deleteDoc(doc(db, 'gallery', id));
+      if (editingId === id) resetForms();
       setFeedback({ type: 'success', message: 'Image removed from gallery.' });
     } catch (err) {
       console.error(err);
@@ -335,8 +401,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // Add Committee Member
-  const handleAddMember = async (e: React.FormEvent) => {
+  // Save Committee Member (Add or Edit)
+  const handleSaveMember = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!memberName || !memberRole) return;
     setFeedback(null);
@@ -344,7 +410,6 @@ export default function AdminDashboard() {
     try {
       let downloadUrl = memberUrl.trim();
 
-      // If no URL but file is chosen, upload to storage
       if (!downloadUrl && memberFile) {
         setMemberProgress(0);
         const storageRef = ref(storage, `committee/${Date.now()}_${memberFile.name}`);
@@ -369,26 +434,38 @@ export default function AdminDashboard() {
         });
       }
 
-      await addDoc(collection(db, 'committee'), {
+      const memberData: any = {
         name: memberName,
         role: memberRole,
         imageUrl: downloadUrl || null,
         displayOrder: parseInt(memberOrder) || 1,
-        createdAt: serverTimestamp(),
-      });
+      };
 
-      setMemberName('');
-      setMemberRole('');
-      setMemberFile(null);
-      setMemberOrder('1');
-      setMemberUrl('');
-      setMemberProgress(null);
-      setFeedback({ type: 'success', message: 'Committee member added successfully!' });
+      if (editingId) {
+        await updateDoc(doc(db, 'committee', editingId), memberData);
+        setFeedback({ type: 'success', message: 'Committee member updated successfully!' });
+      } else {
+        await addDoc(collection(db, 'committee'), {
+          ...memberData,
+          createdAt: serverTimestamp(),
+        });
+        setFeedback({ type: 'success', message: 'Committee member added successfully!' });
+      }
+
+      resetForms();
     } catch (err) {
       console.error(err);
-      setFeedback({ type: 'error', message: 'Failed to add committee member. Ensure rules are configured or use direct photo URL.' });
+      setFeedback({ type: 'error', message: editingId ? 'Failed to update committee member.' : 'Failed to add committee member.' });
       setMemberProgress(null);
     }
+  };
+
+  const handleEditMemberClick = (member: CommitteeMember) => {
+    setEditingId(member.id);
+    setMemberName(member.name);
+    setMemberRole(member.role);
+    setMemberUrl(member.imageUrl || '');
+    setMemberOrder(String(member.displayOrder || 1));
   };
 
   // Delete Committee Member
@@ -396,6 +473,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this committee member?')) return;
     try {
       await deleteDoc(doc(db, 'committee', id));
+      if (editingId === id) resetForms();
       setFeedback({ type: 'success', message: 'Committee member removed.' });
     } catch (err) {
       console.error(err);
@@ -443,31 +521,44 @@ export default function AdminDashboard() {
     }
   };
 
-  // Add Article
-  const handleAddArticle = async (e: React.FormEvent) => {
+  // Save Article (Add or Edit)
+  const handleSaveArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!artTitle || !artContent) return;
     setArtSubmitting(true);
     setFeedback(null);
 
     try {
-      await addDoc(collection(db, 'articles'), {
-        title: artTitle,
-        category: artCategory,
-        content: artContent,
-        createdAt: serverTimestamp()
-      });
-
-      setArtTitle('');
-      setArtCategory('Prayers');
-      setArtContent('');
-      setFeedback({ type: 'success', message: 'Article posted successfully!' });
+      if (editingId) {
+        await updateDoc(doc(db, 'articles', editingId), {
+          title: artTitle,
+          category: artCategory,
+          content: artContent,
+        });
+        setFeedback({ type: 'success', message: 'Article updated successfully!' });
+      } else {
+        await addDoc(collection(db, 'articles'), {
+          title: artTitle,
+          category: artCategory,
+          content: artContent,
+          createdAt: serverTimestamp()
+        });
+        setFeedback({ type: 'success', message: 'Article posted successfully!' });
+      }
+      resetForms();
     } catch (err) {
       console.error(err);
-      setFeedback({ type: 'error', message: 'Failed to add article.' });
+      setFeedback({ type: 'error', message: editingId ? 'Failed to update article.' : 'Failed to add article.' });
     } finally {
       setArtSubmitting(false);
     }
+  };
+
+  const handleEditArticleClick = (art: Article) => {
+    setEditingId(art.id);
+    setArtTitle(art.title);
+    setArtCategory(art.category || 'General');
+    setArtContent(art.content);
   };
 
   // Delete Article
@@ -475,6 +566,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Delete this article?')) return;
     try {
       await deleteDoc(doc(db, 'articles', id));
+      if (editingId === id) resetForms();
       setFeedback({ type: 'success', message: 'Article deleted.' });
     } catch (err) {
       console.error(err);
@@ -482,31 +574,44 @@ export default function AdminDashboard() {
     }
   };
 
-  // Add Video
-  const handleAddVideo = async (e: React.FormEvent) => {
+  // Save Video (Add or Edit)
+  const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vidTitle || !vidUrl) return;
     setVidSubmitting(true);
     setFeedback(null);
 
     try {
-      await addDoc(collection(db, 'videos'), {
-        title: vidTitle,
-        description: vidDesc,
-        youtubeUrl: vidUrl,
-        createdAt: serverTimestamp()
-      });
-
-      setVidTitle('');
-      setVidDesc('');
-      setVidUrl('');
-      setFeedback({ type: 'success', message: 'Video added successfully!' });
+      if (editingId) {
+        await updateDoc(doc(db, 'videos', editingId), {
+          title: vidTitle,
+          description: vidDesc,
+          youtubeUrl: vidUrl,
+        });
+        setFeedback({ type: 'success', message: 'Video updated successfully!' });
+      } else {
+        await addDoc(collection(db, 'videos'), {
+          title: vidTitle,
+          description: vidDesc,
+          youtubeUrl: vidUrl,
+          createdAt: serverTimestamp()
+        });
+        setFeedback({ type: 'success', message: 'Video added successfully!' });
+      }
+      resetForms();
     } catch (err) {
       console.error(err);
-      setFeedback({ type: 'error', message: 'Failed to add video.' });
+      setFeedback({ type: 'error', message: editingId ? 'Failed to update video.' : 'Failed to add video.' });
     } finally {
       setVidSubmitting(false);
     }
+  };
+
+  const handleEditVideoClick = (vid: VideoItem) => {
+    setEditingId(vid.id);
+    setVidTitle(vid.title);
+    setVidDesc(vid.description || '');
+    setVidUrl(vid.youtubeUrl);
   };
 
   // Delete Video
@@ -514,6 +619,7 @@ export default function AdminDashboard() {
     if (!window.confirm('Remove this video?')) return;
     try {
       await deleteDoc(doc(db, 'videos', id));
+      if (editingId === id) resetForms();
       setFeedback({ type: 'success', message: 'Video removed.' });
     } catch (err) {
       console.error(err);
@@ -594,13 +700,13 @@ export default function AdminDashboard() {
           {/* Tabs Logic */}
           {activeTab === 'programs' && (
             <>
-              {/* Add form */}
+              {/* Add/Edit form */}
               <div className="bg-slate-955 bg-slate-955/60 border border-slate-800 p-8 rounded-3xl lg:col-span-1 h-fit shadow-lg">
                 <h2 className="text-xl font-serif font-bold text-white mb-6 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-accent" />
-                  Add Monthly Event
+                  {editingId ? <Pencil className="h-5 w-5 text-accent" /> : <Plus className="h-5 w-5 text-accent" />}
+                  {editingId ? 'Edit Program Event' : 'Add Monthly Event'}
                 </h2>
-                <form onSubmit={handleAddProgram} className="space-y-5">
+                <form onSubmit={handleSaveProgram} className="space-y-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Event Title *</label>
                     <input
@@ -653,8 +759,19 @@ export default function AdminDashboard() {
                     disabled={progSubmitting}
                     className="w-full bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all shadow-md shadow-accent/10 cursor-pointer"
                   >
-                    {progSubmitting ? 'Saving...' : 'Add Program'}
+                    {progSubmitting ? 'Saving...' : (editingId ? 'Save Changes' : 'Add Program')}
                   </button>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForms}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all border border-slate-700 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -680,12 +797,20 @@ export default function AdminDashboard() {
                           <h3 className="text-lg font-serif font-bold text-white mt-2">{item.title}</h3>
                           {item.description && <p className="text-xs text-slate-455 mt-1 leading-relaxed">{item.description}</p>}
                         </div>
-                        <button
-                          onClick={() => handleDeleteProgram(item.id)}
-                          className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
-                        >
-                          <Trash2 className="h-4.5 w-4.5" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditProgramClick(item)}
+                            className="p-3 bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Pencil className="h-4.5 w-4.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProgram(item.id)}
+                            className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Trash2 className="h-4.5 w-4.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -699,12 +824,14 @@ export default function AdminDashboard() {
               {/* Photo uploader */}
               <div className="bg-slate-955 bg-slate-955/60 border border-slate-800 p-8 rounded-3xl lg:col-span-1 h-fit shadow-lg">
                 <h2 className="text-xl font-serif font-bold text-white mb-6 flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-accent" />
-                  Upload Photo
+                  {editingId ? <Pencil className="h-5 w-5 text-accent" /> : <Upload className="h-5 w-5 text-accent" />}
+                  {editingId ? 'Edit Photo Details' : 'Upload Photo'}
                 </h2>
                 <form onSubmit={handleUploadImage} className="space-y-5">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Image File</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      {editingId ? 'Replace Image File (Optional)' : 'Select Image File'}
+                    </label>
                     <input
                       type="file"
                       accept="image/*"
@@ -777,8 +904,19 @@ export default function AdminDashboard() {
                     disabled={uploadProgress !== null}
                     className="w-full bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all shadow-md shadow-accent/10 disabled:opacity-50 cursor-pointer"
                   >
-                    Publish Photo
+                    {uploadProgress !== null ? 'Uploading...' : (editingId ? 'Save Changes' : 'Publish Photo')}
                   </button>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForms}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all border border-slate-700 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -801,13 +939,21 @@ export default function AdminDashboard() {
                           </span>
                         </div>
                         <div className="p-4 flex items-center justify-between gap-4">
-                          <h4 className="text-sm font-semibold text-white truncate max-w-xs">{item.title}</h4>
-                          <button
-                            onClick={() => handleDeleteGallery(item.id)}
-                            className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-lg transition-colors shrink-0 cursor-pointer"
-                          >
-                            <Trash2 className="h-4.5 w-4.5" />
-                          </button>
+                          <h4 className="text-sm font-semibold text-white truncate max-w-[120px] sm:max-w-xs">{item.title}</h4>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditGalleryClick(item)}
+                              className="p-2.5 bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 rounded-lg transition-colors shrink-0 cursor-pointer"
+                            >
+                              <Pencil className="h-4.5 w-4.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteGallery(item.id)}
+                              className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-lg transition-colors shrink-0 cursor-pointer"
+                            >
+                              <Trash2 className="h-4.5 w-4.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -822,10 +968,10 @@ export default function AdminDashboard() {
               {/* Committee Form */}
               <div className="bg-slate-955 bg-slate-955/60 border border-slate-800 p-8 rounded-3xl lg:col-span-1 h-fit shadow-lg">
                 <h2 className="text-xl font-serif font-bold text-white mb-6 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-accent" />
-                  Add Member
+                  {editingId ? <Pencil className="h-5 w-5 text-accent" /> : <Plus className="h-5 w-5 text-accent" />}
+                  {editingId ? 'Edit Committee Member' : 'Add Member'}
                 </h2>
-                <form onSubmit={handleAddMember} className="space-y-5">
+                <form onSubmit={handleSaveMember} className="space-y-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Full Name *</label>
                     <input
@@ -862,7 +1008,9 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Select Photo File</label>
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      {editingId ? 'Replace Photo File (Optional)' : 'Select Photo File'}
+                    </label>
                     <input
                       type="file"
                       accept="image/*"
@@ -899,8 +1047,19 @@ export default function AdminDashboard() {
                     disabled={memberProgress !== null}
                     className="w-full bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all shadow-md shadow-accent/10 disabled:opacity-50 cursor-pointer"
                   >
-                    Add Member
+                    {memberProgress !== null ? 'Uploading photo...' : (editingId ? 'Save Changes' : 'Add Member')}
                   </button>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForms}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all border border-slate-700 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -936,12 +1095,20 @@ export default function AdminDashboard() {
                             <p className="text-xs text-accent font-semibold tracking-wider uppercase mt-1">{item.role}</p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleDeleteMember(item.id)}
-                          className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditMemberClick(item)}
+                            className="p-2.5 bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMember(item.id)}
+                            className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -955,10 +1122,10 @@ export default function AdminDashboard() {
               {/* Article Form */}
               <div className="bg-slate-955 bg-slate-955/60 border border-slate-800 p-8 rounded-3xl lg:col-span-1 h-fit shadow-lg">
                 <h2 className="text-xl font-serif font-bold text-white mb-6 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-accent" />
-                  Post Article
+                  {editingId ? <Pencil className="h-5 w-5 text-accent" /> : <Plus className="h-5 w-5 text-accent" />}
+                  {editingId ? 'Edit Article' : 'Post Article'}
                 </h2>
-                <form onSubmit={handleAddArticle} className="space-y-5">
+                <form onSubmit={handleSaveArticle} className="space-y-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Title *</label>
                     <input
@@ -1000,8 +1167,19 @@ export default function AdminDashboard() {
                     disabled={artSubmitting}
                     className="w-full bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all shadow-md shadow-accent/10 disabled:opacity-50 cursor-pointer"
                   >
-                    {artSubmitting ? 'Posting...' : 'Post Article'}
+                    {artSubmitting ? 'Saving...' : (editingId ? 'Save Changes' : 'Post Article')}
                   </button>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForms}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all border border-slate-700 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -1023,12 +1201,20 @@ export default function AdminDashboard() {
                           <h3 className="text-lg font-serif font-bold text-white mt-3">{item.title}</h3>
                           <p className="text-xs text-slate-400 mt-2 font-sans line-clamp-3 leading-relaxed whitespace-pre-line">{item.content}</p>
                         </div>
-                        <button
-                          onClick={() => handleDeleteArticle(item.id)}
-                          className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditArticleClick(item)}
+                            className="p-2.5 bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteArticle(item.id)}
+                            className="p-2.5 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-xl transition-colors shrink-0 cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1042,10 +1228,10 @@ export default function AdminDashboard() {
               {/* Video Form */}
               <div className="bg-slate-955 bg-slate-955/60 border border-slate-800 p-8 rounded-3xl lg:col-span-1 h-fit shadow-lg">
                 <h2 className="text-xl font-serif font-bold text-white mb-6 flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-accent" />
-                  Add Video / Song
+                  {editingId ? <Pencil className="h-5 w-5 text-accent" /> : <Plus className="h-5 w-5 text-accent" />}
+                  {editingId ? 'Edit Video / Song' : 'Add Video / Song'}
                 </h2>
-                <form onSubmit={handleAddVideo} className="space-y-5">
+                <form onSubmit={handleSaveVideo} className="space-y-5">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Video Title *</label>
                     <input
@@ -1086,8 +1272,19 @@ export default function AdminDashboard() {
                     disabled={vidSubmitting}
                     className="w-full bg-accent hover:bg-accent-light text-primary-dark font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all shadow-md shadow-accent/10 disabled:opacity-50 cursor-pointer"
                   >
-                    {vidSubmitting ? 'Saving...' : 'Add Video'}
+                    {vidSubmitting ? 'Saving...' : (editingId ? 'Save Changes' : 'Add Video')}
                   </button>
+
+                  {editingId && (
+                    <button
+                      type="button"
+                      onClick={resetForms}
+                      className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase tracking-widest text-[10px] transition-all border border-slate-700 cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Cancel Edit
+                    </button>
+                  )}
                 </form>
               </div>
 
@@ -1097,7 +1294,7 @@ export default function AdminDashboard() {
                 {videos.length === 0 ? (
                   <div className="bg-slate-950/20 border border-dashed border-slate-800 p-12 text-center rounded-3xl">
                     <Video className="h-10 w-10 text-slate-700 mx-auto mb-3" />
-                    <p className="text-slate-500 text-sm">No videos configured. Please add one above.</p>
+                    <p className="text-slate-550 text-sm">No videos configured. Please add one above.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1108,7 +1305,13 @@ export default function AdminDashboard() {
                           <p className="text-xs text-slate-455 mt-1 truncate">{item.youtubeUrl}</p>
                           {item.description && <p className="text-xs text-slate-400 font-sans mt-2 line-clamp-2 leading-relaxed">{item.description}</p>}
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleEditVideoClick(item)}
+                            className="p-2 bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
                           <button
                             onClick={() => handleDeleteVideo(item.id)}
                             className="p-2 bg-rose-500/10 border border-rose-500/20 text-rose-350 hover:bg-rose-500/20 rounded-lg transition-colors cursor-pointer"
