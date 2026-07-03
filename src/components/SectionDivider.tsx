@@ -15,7 +15,7 @@ export default function SectionDivider({
         <div className="mx-6 text-accent/70 relative flex items-center justify-center">
           {/* Simple Cross Motif */}
           <svg
-            className="w-6 h-6 animate-pulse"
+            className="w-8 h-8 drop-shadow-[0_0_8px_rgba(212,175,55,0.3)] text-accent"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -24,9 +24,13 @@ export default function SectionDivider({
             strokeLinejoin="round"
           >
             {/* Vertical beam */}
-            <line x1="12" y1="4" x2="12" y2="20" />
-            {/* Horizontal beam */}
-            <line x1="7" y1="9" x2="17" y2="9" />
+            <line x1="12" y1="3" x2="12" y2="21" />
+            {/* Top short horizontal bar (tablet) */}
+            <line x1="9.5" y1="6" x2="14.5" y2="6" />
+            {/* Middle long horizontal bar */}
+            <line x1="6" y1="10" x2="18" y2="10" />
+            {/* Bottom slanted footrest bar */}
+            <line x1="9.5" y1="17" x2="14.5" y2="15" />
           </svg>
         </div>
       ) : (
